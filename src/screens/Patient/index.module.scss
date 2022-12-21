@@ -1,0 +1,34 @@
+.activeButton {
+    background-color: #FFF;
+    color: #000;
+
+    &:hover {
+        background-color: #FFF;
+        color: #000;
+    }
+}
+
+.button {
+    background-color: '#1368E9';
+    color: #FFF;
+}
+
+.textDesign {
+    color: #fff;
+}
+
+.detailText {
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.DialogHeading {
+    background-color: #1368E9;
+    color: #fff;
+    padding: 10px;
+    font-size: 20px
+}
+
+.historyList {
+  font-weight: 500;
+}
