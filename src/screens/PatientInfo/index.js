@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Grid, Typography, Button, CardMedia, CardContent, Card, CardActions } from '@mui/material';
+import { Grid, Typography, Button, CardMedia, CardContent, Card, CardActions, Alert } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchAllProducts, fetchProductById, addToCart } from '../../store/action/productManagementAction';
 import Image from 'next/image'
@@ -44,7 +44,7 @@ function DisplayProduct() {
                         <Grid item xs={12} sm={4} md={3} lg={3} xl={3} key={index.toString()}>
                             <Card sx={{ maxWidth: 350 }}>
                                 <CardMedia>
-                                    <Image src="/Atheletes.png" alt="Package" height="230px" width={"280px"} />
+                                    <Image src={`/${item.storage}`} alt="Package" height="230px" width={"280px"} />
                                 </CardMedia>
                                 <CardContent>
                                     <Grid item xs={12}>

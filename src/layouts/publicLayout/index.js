@@ -23,15 +23,11 @@ import { isHomeButton } from '../../store/reducers/productManagementReducer';
 
 function PublicLayout(props) {
 
-   useEffect(() => {
-      carts
-   }, []);
+   const carts = useSelector((state) => state.productManagementReducer.carts);
+   const IsHomeButton = useSelector((state) => state.productManagementReducer.isHomeButton);
 
    const router = useRouter();
    const dispatch = useDispatch();
-
-   const carts = useSelector((state) => state.productManagementReducer.carts)
-   const IsHomeButton = useSelector((state) => state.productManagementReducer.isHomeButton)
 
    const viewCart = () => {
       router.push({ pathname: '/patientInfo/cart' })
@@ -39,12 +35,12 @@ function PublicLayout(props) {
    }
 
    const handleProductView = () => {
-      router.push({ pathname: '/patientInfo' })
+      router.push({ pathname: '/' })
       dispatch(isHomeButton(false))
    }
 
    const handleAdminView = () => {
-      router.push({ pathname: '/' })
+      router.push({ pathname: '/patientInfo' })
    }
 
    const { title, children, classes, isDesktop, alertMessage, openAlert, alertSeverity } = props;
@@ -68,7 +64,7 @@ function PublicLayout(props) {
                      <Grid item xs={2} textAlign="center">
                         <IconButton size="medium" style={{ color: "#000" }} onClick={() => viewCart()}> <Badge badgeContent={carts.length} color="secondary"><AddShoppingCartOutlinedIcon /></Badge></IconButton>
                      </Grid>
-                     <Grid item xs={1}>
+                     <Grid item xs={1} textAlign={"left"}>
                         <IconButton onClick={() => handleAdminView()}><AccountCircleIcon /></IconButton>
                      </Grid>
                   </Grid>

@@ -56,6 +56,7 @@ function Cart(props) {
 
     const handlePatient = (param) => {
         dispatch(updateToCart(param))
+        
         router.push({ pathname: "/patientInfo/patient-info" })
     }
 
@@ -80,9 +81,10 @@ function Cart(props) {
     const handleCouponClose = () => {
         setState({ ...state, isCoupon: false })
     }
-
+    let discountPrice = carts.map((item) => (item.price * item.count)).reduce((acc, cur) => acc + cur, 0)
+    
     const handleApply = (param) => {
-        let discountPrice = carts.map((item) => (item.price * item.count)).reduce((acc, cur) => acc + cur, 0)
+        // let discountPrice = carts.map((item) => (item.price * item.count)).reduce((acc, cur) => acc + cur, 0)
         let dis = parseInt(discountPrice) - parseInt(param.flat_amount) + parseInt(state.shippingCharge)
         setState({ ...state, discount: param.flat_amount, total: dis, isCoupon: false, discountName: param.name })
         dispatch(userApplyCoupon({ "coupenCode": param.name, "discount": parseInt(param.flat_amount) }))
@@ -162,19 +164,19 @@ function Cart(props) {
                                         <Typography align={"right"}>{`$${state.shippingCharge}`}</Typography>
                                     </Grid>
                                     <Grid item xs={8}>
-                                        <Typography className={basicStyle.cartHeading}>Discount<span>({state.discountName})</span></Typography>
+                                        <Typography className={basicStyle.cartHeading}>Discount<span> ( {state.discountName} )</span></Typography>
                                     </Grid>
                                     <Grid item xs={1}>
                                         <Typography align={"right"}>-</Typography>
                                     </Grid>
                                     <Grid item xs={3}>
-                                        <Typography align={"right"}>{`$${state.discount}`}</Typography>
+                                        <Typography align={"right"}>{`$${!state.discount ? 0 : state.discount}`}</Typography>
                                     </Grid>
                                     <Grid item xs={6}>
                                         <Typography className={basicStyle.cartHeading}>Total</Typography>
                                     </Grid>
                                     <Grid item xs={6}>
-                                        <Typography align={"right"}>{`$${state.total}`}</Typography>
+                                        <Typography align={"right"}>{`$${!state.total ? parseInt(discountPrice) + parseInt(state.shippingCharge) : state.total} `}</Typography>
                                     </Grid>
                                 </Grid>
                             </Grid>

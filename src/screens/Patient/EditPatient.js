@@ -11,7 +11,7 @@ function EditPatient(props) {
         id: null,
         firstName: "", lastName: "", phoneNumber: "", email: "",
         city: "", gender: "", addressLine1: "", addressLine2: "",
-        dateOfBirth: "", status: "Active", zipCode: "", zipCodeError: false, state: "", firstNameError: false, lastNameError: false,
+        dateOfBirth: null, status: "Active", zipCode: "", zipCodeError: false, state: "", firstNameError: false, lastNameError: false,
         phoneNumberError: false, emailError: false, addressLine1Error: false,
         cityError: false, dateOfBirthError: false, genderError: false, stateError: false, isClose: false
     })
@@ -64,7 +64,6 @@ function EditPatient(props) {
             data.zip_code = state.zipCode;
             data.address_line1 = state.addressLine1;
             data.address_line2 = state.addressLine2;
-
             dispatch(updateMemberAction(data, props));
         }
     }
@@ -128,7 +127,6 @@ function EditPatient(props) {
                                 onChange={(event) => { setState({ ...state, addressLine1: event.target.value, addressLine1Error: false }) }}
                                 error={state.addressLine1Error}
                                 helperText={state.addressLine1Error ? "please enter the address line 1" : null}
-
                             />
                         </Grid>
                         <Grid item xs={6}>
@@ -142,7 +140,7 @@ function EditPatient(props) {
                         </Grid>
                         <Grid item xs={6}>
                             <Typography>Date Of Birth</Typography>
-                            <TextField placeholder='Date of birth'
+                            <TextField placeholder='MM/DD/YYYY'
                                 size="small"
                                 fullWidth
                                 value={state.dateOfBirth}

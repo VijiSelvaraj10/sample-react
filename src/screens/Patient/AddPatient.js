@@ -2,13 +2,16 @@ import React, { useState } from 'react';
 import { Grid, Typography, TextField, Button, MenuItem } from '@mui/material';
 import { createMemberAction } from '../../store/action/memberAction';
 import { useDispatch } from 'react-redux';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
+import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 
 function AddPatient(props) {
     // useState is a function returns an array with variable and its update function 
     const [state, setState] = useState({
         firstName: "", lastName: "", phoneNumber: "", email: "",
         city: "", gender: "", addressLine1: "", addressLine2: "",
-        dateOfBirth: "", status: "Active", state: "", zipCode: "", zipCodeError: false, firstNameError: false, lastNameError: false,
+        dateOfBirth: null, status: "Active", state: "", zipCode: "", zipCodeError: false, firstNameError: false, lastNameError: false,
         phoneNumberError: false, emailError: false, addressLine1Error: false,
         cityError: false, dateOfBirthError: false, genderError: false, stateError: false,
     })
@@ -41,6 +44,10 @@ function AddPatient(props) {
             data.address_line2 = state.addressLine2;
             dispatch(createMemberAction(data, props));
         }
+    }
+
+    const handleDob = (newValue) => {
+        setState({ ...state, dateOfBirth: newValue })
     }
 
     return (
@@ -115,14 +122,14 @@ function AddPatient(props) {
                         </Grid>
                         <Grid item xs={6}>
                             <Typography>Date Of Birth</Typography>
-                            <TextField placeholder='Date of birth'
-                                size="small"
-                                fullWidth
-                                value={state.dateOfBirth}
-                                onChange={(event) => setState({ ...state, dateOfBirth: event.target.value, dateOfBirthError: false })}
-                                error={state.dateOfBirthError}
-                                helperText={state.dateOfBirthError ? "Please select the date of birth" : null}
-                            />
+                            <LocalizationProvider dateAdapter={AdapterMoment}>
+                                <DesktopDatePicker
+                                    inputFormat="MM/DD/YYYY"
+                                    value={state.dateOfBirth}
+                                    onChange={handleDob}
+                                    renderInput={(params) => <TextField fullWidth size={"small"} {...params} />}
+                                />
+                            </LocalizationProvider>
                         </Grid>
                         <Grid item xs={6}>
                             <Typography>Gender</Typography>
@@ -135,6 +142,7 @@ function AddPatient(props) {
                                 onChange={(event) => setState({ ...state, gender: event.target.value, genderError: false })}
                                 error={state.genderError}
                                 helperText={state.genderError ? "Please select the gender" : null}>
+                                     <em>none</em>
                                 <MenuItem value={"Male"}>Male</MenuItem>
                                 <MenuItem value={"Female"}>Female</MenuItem>
                                 <MenuItem value={"Transgender"}>Transgender</MenuItem>

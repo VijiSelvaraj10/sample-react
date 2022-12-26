@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Grid, Typography, TextField, FormControlLabel, Button, RadioGroup, Radio, MenuItem } from '@mui/material';
-import { createMemberAction } from '../../store/action/memberAction';
+import { Grid, Typography, TextField, FormControlLabel, RadioGroup, Radio, MenuItem } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchAllCoupons } from '../../store/action/couponAction';
 import Stripe from '../stripe/StripeContainer';
-import basicStyle from './index.module.scss'
+import basicStyle from './index.module.scss';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
+import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 
-function PatientInfo(props) {
+function PatientInfo() {
     const [state, setState] = useState({
         firstName: "",
         lastName: "",
@@ -14,13 +16,14 @@ function PatientInfo(props) {
         phoneNumber: "",
         addressline1: "",
         addressline2: "",
-        dateOfBirth: "",
+        dateOfBirth: null,
         gender: "",
         city: "",
         state: "",
         zipCode: "",
         IsAllergy: "",
         allergy: "",
+        severity: "",
         medication: "",
         firstName_error: false,
         lastName_error: false,
@@ -39,7 +42,9 @@ function PatientInfo(props) {
         isView: false,
         price: "",
         total: null,
-        shippingCharge: "10"
+        shippingCharge: "10",
+        info: [],
+        otherAllergy: ""
     })
 
     const dispatch = useDispatch();
@@ -47,20 +52,13 @@ function PatientInfo(props) {
     const userSelectedCouponDetails = useSelector((state) => state.couponReducer.userSelectCoupon);
 
     let price = carts.map((item) => (item.price * item.count)).reduce((acc, cur) => acc + cur, 0)
-    let finalPrice = parseInt(price) + parseInt(state.shippingCharge) - parseInt(userSelectedCouponDetails !== null && userSelectedCouponDetails.discount)
+    let finalPrice = parseInt(price) + parseInt(state.shippingCharge) - parseInt(!userSelectedCouponDetails ? 0 : userSelectedCouponDetails.discount)
 
-    useEffect(() => {
-        dispatch(fetchAllCoupons())
-        setState({ ...state, total: finalPrice })
-    }, [dispatch])
+    let data = {};
+    let allergies = {};
 
-    const handleChange = (event) => {
-        setState({ ...state, IsAllergy: event.target.value })
-    }
-
-    const handleSubmit = () => {
-        let data = {};
-        let allergies = {};
+    const validateEmail = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+   
         data.first_name = state.firstName;
         data.last_name = state.lastName;
         data.email = state.email;
@@ -73,12 +71,26 @@ function PatientInfo(props) {
         data.address_line1 = state.addressline1;
         data.address_line2 = state.addressline2;
         data.allergies = state.IsAllergy;
-        allergies.is_allergy = state.IsAllergy;
-        allergies.type = state.allergy;
-        allergies.status = "Active";
-        data.allergies = state.IsAllergy;
-        allergies.description = state.medication;
-        dispatch(createMemberAction(data, props, allergies))
+    
+
+    allergies.is_allergy = state.IsAllergy; // allergy is there or not
+    allergies.type = state.allergy; //type of allergy
+    allergies.status = "Active";
+    allergies.severity = state.severity; // severity of the allergy
+    allergies.medication = state.medication;//tablets
+    allergies.value = state.otherAllergy;
+
+    useEffect(() => {
+        dispatch(fetchAllCoupons())
+        setState({ ...state, total: finalPrice })
+    }, [dispatch])
+
+    const handleChange = (event) => {
+        setState({ ...state, IsAllergy: event.target.value })
+    }
+
+    const handleDob = (newValue) => {
+        setState({ ...state, dateOfBirth: newValue })
     }
 
     return (
@@ -108,7 +120,9 @@ function PatientInfo(props) {
                                 placeholder="Email"
                                 fullWidth
                                 value={state.email}
-                                onChange={(event) => setState({ ...state, email: event.target.value.trim() })} />
+                                onChange={(event) => setState({ ...state, email: event.target.value.trim() })}
+                                error = {state.email_error}
+                                helperText={state.email_error ? "please enter email" : false ? "please enter valid email": null} />
                         </Grid>
                         <Grid item xs={12} sm={6}>
                             <TextField size="small"
@@ -143,17 +157,21 @@ function PatientInfo(props) {
                                 fullWidth
                                 select
                                 onChange={(event) => setState({ ...state, gender: event.target.value })}>
+                                    <em>none</em>
                                 <MenuItem value={"Male"}>Male</MenuItem>
                                 <MenuItem value={"Female"}>Female</MenuItem>
                                 <MenuItem value={"Transgender"}>Transgender</MenuItem>
                             </TextField>
                         </Grid>
                         <Grid item xs={12} sm={6}>
-                            <TextField size="small"
-                                placeholder='DOB'
-                                value={state.dateOfBirth}
-                                fullWidth
-                                onChange={(event) => setState({ ...state, dateOfBirth: event.target.value })} />
+                            <LocalizationProvider dateAdapter={AdapterMoment}>
+                                <DesktopDatePicker
+                                    inputFormat="MM/DD/YYYY"
+                                    value={state.dateOfBirth}
+                                    onChange={handleDob}
+                                    renderInput={(params) => <TextField fullWidth size={"small"} {...params} />}
+                                />
+                            </LocalizationProvider>
                         </Grid>
                         <Grid item xs={12} sm={6}>
                             <TextField
@@ -221,8 +239,8 @@ function PatientInfo(props) {
                                                 <Grid item xs={12}>
                                                     <TextField fullWidth
                                                         size="small"
-                                                        value={state.allergy}
-                                                        onChange={(e) => setState({ ...state, allergy: e.target.value })}
+                                                        value={state.otherAllergy}
+                                                        onChange={(e) => setState({ ...state, otherAllergy: e.target.value })}
                                                     />
                                                 </Grid>
                                                 : null
@@ -231,8 +249,9 @@ function PatientInfo(props) {
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
                                         <Typography>Severity</Typography>
-                                        <RadioGroup
-                                            defaultValue="Mild">
+                                        <RadioGroup onChange={(e) => setState({ ...state, severity: e.target.value })}
+                                            value={state.severity}
+                                            defaultValue="mild">
                                             <Grid container>
                                                 <Grid item xs={6}>
                                                     <FormControlLabel value="Mild" control={<Radio />} label="Mild" />
@@ -259,14 +278,14 @@ function PatientInfo(props) {
                             }
                         </Grid>
                         <Grid item xs={12}>
-                            <Grid container spacing={6}>
+                            {/* <Grid container spacing={6}>
                                 <Grid item xs={6}>
                                     <Button variant="outlined" style={{ float: 'right', textTransform: "none" }}>Back</Button>
                                 </Grid>
                                 <Grid item xs={6}>
                                     <Button variant="contained" style={{ textTransform: "none" }} onClick={() => handleSubmit()}>Payment</Button>
                                 </Grid>
-                            </Grid>
+                            </Grid> */}
                         </Grid>
                     </Grid>
                 </Grid>
@@ -281,57 +300,57 @@ function PatientInfo(props) {
                         <Grid item xs={12}>
                             {carts.map((item, index) => (
                                 <Grid container spacing={2} key={index.toString()}>
-                                    <Grid item xs={7}>
+                                    <Grid item xs={8}>
                                         <Typography>{index + 1}. {item.name}</Typography>
                                     </Grid>
                                     <Grid item xs={2}>
                                         <Typography >{`${item.count}X`}</Typography>
                                     </Grid>
-                                    <Grid item xs={3}>
-                                        <Typography>{`$${item.price}`}</Typography>
+                                    <Grid item xs={2}>
+                                        <Typography align={"right"} style={{ paddingRight: "10px" }}>{`$${item.price * item.count}`}</Typography>
                                     </Grid>
                                 </Grid>
                             ))}
                         </Grid>
                         <Grid item xs={12}>
                             <Grid container spacing={2}>
-                                <Grid item xs={7}>
+                                <Grid item xs={8}>
                                     <Typography className={basicStyle.cartHeading}>Shipping charge</Typography>
                                 </Grid>
                                 <Grid item xs={2}>
                                     <Typography>+</Typography>
                                 </Grid>
-                                <Grid item xs={3}>
-                                    <Typography>{`$${state.shippingCharge}`}</Typography>
+                                <Grid item xs={2}>
+                                    <Typography align={"right"} style={{ paddingRight: "10px" }}>{`$${state.shippingCharge}`}</Typography>
                                 </Grid>
                             </Grid>
                         </Grid>
                         <Grid item xs={12}>
                             <Grid container spacing={2}>
-                                <Grid item xs={7}>
+                                <Grid item xs={8}>
                                     <Typography className={basicStyle.cartHeading}>Discount</Typography>
                                 </Grid>
                                 <Grid item xs={2}>
                                     <Typography>-</Typography>
                                 </Grid>
-                                <Grid item xs={3}>
-                                    <Typography>{`$${userSelectedCouponDetails !== null && userSelectedCouponDetails.discount}`}</Typography>
+                                <Grid item xs={2}>
+                                    <Typography align={"right"} style={{ paddingRight: "10px" }}>{`$${!userSelectedCouponDetails ? 0 : userSelectedCouponDetails.discount}`}</Typography>
                                 </Grid>
                             </Grid>
                         </Grid>
                         <Grid item xs={12}>
-                            <Grid container spacing={2} style={{ padding: "3px" }}>
-                                <Grid item xs={9}>
+                            <Grid container spacing={2}>
+                                <Grid item xs={10}>
                                     <Typography className={basicStyle.cartHeading}>Total</Typography>
                                 </Grid>
-                                <Grid item xs={3}>
-                                    <Typography>{`$${state.total}`}</Typography>
+                                <Grid item xs={2}>
+                                    <Typography align={"right"} style={{ paddingRight: "10px" }}>{`$${state.total}`}</Typography>
                                 </Grid>
                             </Grid>
                         </Grid>
                     </Grid>
                     <Grid item xs={12} style={{ padding: "10px" }}>
-                        <Stripe />
+                        <Stripe details={data} allergyDetail={allergies} totalPrice={state.total} />
                     </Grid>
                 </Grid>
             </Grid>

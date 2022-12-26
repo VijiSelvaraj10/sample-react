@@ -40,11 +40,13 @@ export const productManagementReducer = createSlice({
     },
     isHomeButton: (state, { payload }) => {
       state.isHomeButton = payload;
-    }
+    },
+    removeCart: (state, { payload }) => {
+      state.carts = []
+    },
   }
 });
 
-
 // Action creators are generated for each case reducer function
-export const { fetchProduct, addProduct, updateProduct, addProductAdon, fetchProductId, addCart, isHomeButton, updateCart, reloadCart } = productManagementReducer.actions
+export const { fetchProduct, addProduct, updateProduct, addProductAdon, removeCart, fetchProductId, addCart, isHomeButton, updateCart, reloadCart } = productManagementReducer.actions
 export default productManagementReducer.reducer;

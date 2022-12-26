@@ -24,7 +24,7 @@ function ViewProduct(props) {
 
     useEffect(() => {
         updateProduct()
-    },[])
+    }, [])
 
     const updateProduct = () => {
         setState({ ...state, product: products !== undefined && products.length > 0 && products.filter((item) => item.id == props.productId)[0] })
@@ -64,7 +64,7 @@ function ViewProduct(props) {
                 <Grid item xs={12}>
                     <Grid container justifyContent={"space-evenly"}>
                         <Grid item xs={12} sm={3} style={{ height: "50vh" }}>
-                            <Image src={'/Atheletes.png'} alt='package' height='320px' width='300px' />
+                            <Image src={`/${state.product !== null && state.product.storage}`} alt='package' height='320px' width='300px' />
                         </Grid>
                         <Grid item xs={12} sm={8}>
                             <Grid container spacing={3}>
@@ -103,7 +103,7 @@ function ViewProduct(props) {
                             <Grid item xs={6} sm={2} key={index.toString()}>
                                 <Grid container spacing={2} justifyContent={"center"}>
                                     <Grid item xs={12}>
-                                        <Image src='/atheletes.png' alt="png" height="200px" width="200px" />
+                                        <Image src={`/${products.find((value) => value.id === item.related_product_id).storage}`} alt="png" height="200px" width="200px" />
                                     </Grid>
                                     <Grid item xs={12}>
                                         <Typography align={"center"} className={basicStyle.text}>{item.name}</Typography>

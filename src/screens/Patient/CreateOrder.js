@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { Grid, Typography, TextField, Button, MenuItem, IconButton, Checkbox } from '@mui/material';
-import { createMemberAction, orderAction } from '../../store/action/memberAction';
+import { Grid, Typography, TextField, Button, MenuItem, Checkbox, Select } from '@mui/material';
+import { orderAction } from '../../store/action/memberAction';
 import { useDispatch } from 'react-redux';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import EditIcon from '@mui/icons-material/Edit';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
+import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 
 function CreateOrder(props) {
     // useState is a function returns an array with variable and its update function 
@@ -11,7 +14,7 @@ function CreateOrder(props) {
         id: null,
         groupName: "", firstName: "", lastName: "", phoneNumber: "", email: "",
         city: "", gender: "", addressLine1: "", addressLine2: "",
-        dateOfBirth: "", status: "Active", state: "", zipCode: "", zipCodeError: false, firstNameError: false, lastNameError: false,
+        dateOfBirth: null, status: "Active", state: "", zipCode: "", zipCodeError: false, firstNameError: false, lastNameError: false,
         phoneNumberError: false, emailError: false, addressLine1Error: false,
         cityError: false, dateOfBirthError: false, genderError: false, stateError: false,
         members: [], isAddMember: true, groupNameError: false,
@@ -30,6 +33,7 @@ function CreateOrder(props) {
                 isError = true
             }
         }
+
 
         if (isError === false) {
             let data = {};
@@ -52,9 +56,7 @@ function CreateOrder(props) {
                 let member = state.members.map((item) => item.id === state.id ? data : item)
                 setState({ ...state, isAddMember: true, members: member })
             }
-
         }
-
     }
 
     const editMemberAction = (param) => {
@@ -63,8 +65,8 @@ function CreateOrder(props) {
             ...state, id: result.id, isAddMember: false, firstName: result.first_name, lastName: result.last_name, phoneNumber: result.phone_number, email: result.email, city: result.city, gender: result.gender, addressLine1: result.address_line1, addressLine2: result.address_line2,
             dateOfBirth: result.date_of_birth, status: "Active", state: result.state, zipCode: result.zip_code, isPrimaryUser: result.is_primary_user
         })
-
     }
+
     const handleClose = () => {
         props.closeAdd()
     }
@@ -77,7 +79,7 @@ function CreateOrder(props) {
     const createOrderAction = () => {
         setState({
             ...state, isAddMember: false, firstName: "", lastName: "", phoneNumber: "", email: "", city: "", gender: "", addressLine1: "", addressLine2: "",
-            dateOfBirth: "", status: "Active", state: "", zipCode: "", isPrimaryUser: false
+            dateOfBirth: null, status: "Active", state: "", zipCode: "", isPrimaryUser: false
         })
     }
 
@@ -90,6 +92,10 @@ function CreateOrder(props) {
         data.groupName = state.groupName
         data.members = state.members
         dispatch(orderAction(data, props))
+    }
+
+    const handleDob = (newValue) => {
+        setState({ ...state, dateOfBirth: newValue })
     }
 
     return (
@@ -108,7 +114,6 @@ function CreateOrder(props) {
                                 helperText={state.firstNameError ? "Please enter first name" : null}
                             />
                         </Grid>
-
                         <Grid item xs={6} style={{ display: 'flex', flexDirection: "row", justifyContent: "space-around", alignItems: "center" }}>
                             <Button variant="contained" style={{ textTransform: "none" }} onClick={() => createOrderAction()}> Add Members</Button>
                             {state.members.length > 0 && state.members.filter((item) => item.is_primary_user === true).length > 0 &&
@@ -201,30 +206,34 @@ function CreateOrder(props) {
                                 </Grid>
                                 <Grid item xs={6}>
                                     <Typography>Date Of Birth</Typography>
-                                    <TextField placeholder='Date of birth'
-                                        size="small"
-                                        fullWidth
-                                        value={state.dateOfBirth}
-                                        onChange={(event) => setState({ ...state, dateOfBirth: event.target.value, dateOfBirthError: false })}
-                                        error={state.dateOfBirthError}
-                                        helperText={state.dateOfBirthError ? "Please select the date of birth" : null}
-                                    />
+                                    <LocalizationProvider dateAdapter={AdapterMoment}>
+                                        <DesktopDatePicker
+                                            inputFormat="MM/DD/YYYY"
+                                            value={state.dateOfBirth}
+                                            onChange={handleDob}
+                                            renderInput={(params) => <TextField fullWidth size={"small"} {...params} />}
+                                            error={state.dateOfBirthError}
+                                            helperText={state.dateOfBirthError ? "Please select the date of birth" : null}
+                                        />
+                                    </LocalizationProvider>
                                 </Grid>
                                 <Grid item xs={6}>
                                     <Typography>Gender</Typography>
-                                    <TextField placeholder='Gender'
+                                    <Select
                                         size="small"
                                         fullWidth
-                                        select
-                                        defaultValue={"Please select the gender"}
+                                        displayEmpty
                                         value={state.gender}
                                         onChange={(event) => setState({ ...state, gender: event.target.value, genderError: false })}
                                         error={state.genderError}
                                         helperText={state.genderError ? "Please select the gender" : null}>
+                                        <MenuItem disabled value="">
+                                            <em style={{fontWeight:"300"}}>Select gender</em>
+                                        </MenuItem>
                                         <MenuItem value={"Male"}>Male</MenuItem>
                                         <MenuItem value={"Female"}>Female</MenuItem>
                                         <MenuItem value={"Transgender"}>Transgender</MenuItem>
-                                    </TextField>
+                                    </Select>
                                 </Grid>
                                 <Grid item xs={6}>
                                     <Typography>City</Typography>

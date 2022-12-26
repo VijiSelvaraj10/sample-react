@@ -1,4 +1,4 @@
-import { combineReducers } from '@reduxjs/toolkit';
+import { combineReducers } from 'redux';
 import memberReducer from './memberReducer';
 import productManagementReducer from './productManagementReducer';
 import orderReducer from './orderReducer';

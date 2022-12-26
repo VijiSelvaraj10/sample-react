@@ -1,3 +1,3 @@
-import DisplayProduct from '../../screens/PatientInfo/index';
-DisplayProduct.layout = "public";
-export default DisplayProduct;
+import HomeScreen from '../../screens/Home';
+HomeScreen.layout = "login";
+export default HomeScreen;

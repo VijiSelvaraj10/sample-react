@@ -1,3 +1,3 @@
-import HomeScreen from '../screens/Home'
-HomeScreen.layout = "login"
-export default HomeScreen;
+import patientInfo from '../screens/PatientInfo';
+patientInfo.layout = "public"
+export default patientInfo;

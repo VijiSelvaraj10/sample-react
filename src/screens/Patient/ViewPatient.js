@@ -3,12 +3,14 @@ import { useDispatch } from 'react-redux';
 import basicStyles from './index.module.scss';
 import { useSelector } from 'react-redux';
 import { fetchMedicalHistories } from '../../store/action/medicalHistory';
-import { Grid, Typography, Button, Divider, IconButton, Dialog, DialogContent } from '@mui/material';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { Grid, Typography, Button, Divider, Dialog, DialogContent, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
 import TopBar from '../../components/TopBar';
 import moment from 'moment';
 import EditPatient from './EditPatient';
 import { fetchAllMembers } from '../../store/action/memberAction';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { fetchOrdersByMemberId, fetchAllOrders } from '../../store/action/orderAction';
+import Image from 'next/image';
 
 function ViewPatient(props) {
     const [state, setState] = useState({
@@ -21,21 +23,24 @@ function ViewPatient(props) {
         isViewMedication: false
     });
 
-    let dispatch = useDispatch();
+    const dispatch = useDispatch();
 
     const members = useSelector((state) => state.memberReducer.members);
     const histories = useSelector((state) => state.medicalHistoryReducer.histories);
+    const order = useSelector((state) => state.orderReducer.order);
 
     useEffect(() => {
         dispatch(fetchMedicalHistories())
         dispatch(fetchAllMembers())
+        dispatch(fetchAllOrders())
     }, [dispatch])
 
     const handleDetail = () => {
-        setState({ ...state, detailOpen: true, historyOpen: false, })
+        setState({ ...state, detailOpen: true, historyOpen: false })
     }
 
     const handleHistory = () => {
+        dispatch(fetchOrdersByMemberId(props.patientId))
         setState({ ...state, historyOpen: true, detailOpen: false })
     }
 
@@ -63,8 +68,8 @@ function ViewPatient(props) {
         setState({ ...state, isOpen: true, patientId: parseInt(props.patientId) })
     }
 
-    let member = members.find((item) => item.id == props.patientId)
-    // console.log("member" + JSON.stringify(member))
+    let member = members.find((item) => item.id == props.patientId);
+    console.log("^^^^^^^^"+JSON.stringify(order))
 
     return (
         <>
@@ -97,17 +102,54 @@ function ViewPatient(props) {
                                 </Grid>
                                 <Grid item xs={12}>
                                     <Grid container style={{ border: '1px solid grey', borderRadius: '10px', backgroundColor: '#EFEFEF', padding: '5px' }}>
-                                        <Grid item xs={4}>
-                                            <Typography className={basicStyles.historyList}>Athelete Package</Typography>
-                                        </Grid>
-                                        <Grid item xs={4}>
-                                            <Typography>14/10/2022</Typography>
-                                        </Grid>
-                                        <Grid item xs={3}>
-                                            <Typography>Paid</Typography>
-                                        </Grid>
-                                        <Grid item xs={1}>
-                                            <IconButton onClick={() => ViewOrderHistory()}> <MoreVertIcon /></IconButton>
+                                        <Grid item xs={12}>
+                                            <Accordion>
+                                                <AccordionSummary
+                                                    expandIcon={<ExpandMoreIcon />}
+                                                    aria-controls="panel1a-content"
+                                                    id="panel1a-header">
+                                                    <Grid item xs={4}>
+                                                        <Typography><span style={{ fontWeight: "bold" }}>Order No:</span>{order.invoice !== undefined && order.order_number}</Typography>
+                                                    </Grid>
+                                                    <Grid item xs={4}>
+                                                        <Typography><span style={{ fontWeight: "bold" }}>Paid Date:</span>{order.invoice !== undefined && order.invoice.paid_date}</Typography>
+                                                    </Grid>
+                                                    <Grid item xs={4}>
+                                                        <Typography><span style={{ fontWeight: "bold" }}>Status:</span>{order.invoice !== undefined && order.invoice.status === "Active" ? "Paid" : "Unsuccess"}</Typography>
+                                                    </Grid>
+                                                </AccordionSummary>
+                                                <AccordionDetails>
+                                                    <Grid item xs={12}>
+                                                        <Grid container>
+                                                            <Grid item xs={3}>
+                                                                <h3 style={{ fontWeight: "bold", textAlign: "center" }}>Product Name: </h3>
+                                                            </Grid>
+                                                            <Grid item xs={4}>
+                                                                <h3 style={{ fontWeight: "bold", textAlign: "center", paddingLeft: "5rem" }}>Price: </h3>
+                                                            </Grid>
+                                                            <Grid item xs={5}>
+                                                                <h3 style={{ fontWeight: "bold", textAlign: "center" }}>Quantity: </h3>
+                                                            </Grid>
+                                                        </Grid>
+                                                        {order.orderItems !== undefined && order.orderItems.map((ele, index) =>
+                                                            <Grid container key={index.toString()}>
+                                                                <Grid item xs={1}>
+                                                                    <Image src="/Atheletes.png" alt="Package" height="40px" width={"40px"} />
+                                                                </Grid>
+                                                                <Grid item xs={3} style={{ float: 'left' }}>
+                                                                    <Typography>{index + 1}. {ele.product_name}</Typography>
+                                                                </Grid>
+                                                                <Grid item xs={3} style={{ textAlign: "center" }}>
+                                                                    <Typography>{"$ " + ele.price}</Typography>
+                                                                </Grid>
+                                                                <Grid item xs={5} style={{ textAlign: "center" }}>
+                                                                    <Typography>{ele.quantity}</Typography>
+                                                                </Grid>
+                                                            </Grid>
+                                                        )}
+                                                    </Grid>
+                                                </AccordionDetails>
+                                            </Accordion>
                                         </Grid>
                                     </Grid>
                                 </Grid>
@@ -115,7 +157,7 @@ function ViewPatient(props) {
                         </Grid>
                         :
                         <Grid item xs={12}>
-                            <Grid container spacing={3} justifyContent='space-between' alignItems='center' style={{ marginTop: "1px" }} >
+                            <Grid container spacing={3} justifyContent='space-between' alignItems='center' style={{ marginTop: "1px" }}>
                                 <Grid item xs={6}>
                                     <Grid container spacing={3} alignItems='center'>
                                         <Grid item xs={6}>
@@ -156,9 +198,7 @@ function ViewPatient(props) {
                                             <Typography align='right' className={basicStyles.detailText}> Phone Number</Typography>
                                         </Grid>
                                         <Grid item xs={6}>
-
                                             <Typography align='left' >{member !== undefined && member.phone_number}</Typography>
-
                                         </Grid>
                                     </Grid>
                                     <Divider />
@@ -169,9 +209,7 @@ function ViewPatient(props) {
                                             <Typography align='right' className={basicStyles.detailText}> Address Line 1</Typography>
                                         </Grid>
                                         <Grid item xs={6}>
-
                                             <Typography align='left'>{member !== undefined && member.address_line1}</Typography>
-
                                         </Grid>
                                     </Grid>
                                     <Divider />

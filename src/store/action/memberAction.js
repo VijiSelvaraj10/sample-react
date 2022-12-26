@@ -1,9 +1,6 @@
 import { fetchMember, addMember, updateMember, fetchMemberById } from '../reducers/memberReducer';
 import { createMedicalHistories } from '../action/medicalHistory';
 import API from '../../api/orderApi';
-import Router from 'next/router';
-
-// const router = useRouter();
 
 export function createMemberAction(data, props, allergy) {
   return async dispatch => {
@@ -68,12 +65,12 @@ export function orderAction(data,props) {
 }
 
 export function payment(data) {
-  // console.log("DATA=====>"+JSON.stringify(data))
+  console.log("DATA=====>"+JSON.stringify(data))
   return async dispatch => {
     API.post("payment", data).then(async (response) => {
     // console.log("response====>"+JSON.stringify(response))
     if(response.status == "success"){
-      Router.push({pathname: "/patientInfo"})
+      // router.push({pathname: "/patientInfo"})
     }
     })
   }
